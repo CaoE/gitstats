@@ -162,6 +162,9 @@ class DataCollector:
 
 		self.lines_added_by_domain_year2 = {}
 		self.lines_removed_by_domain_year2 = {}
+
+		self.commits_by_domain_year2 = {}
+		self.commits_by_domain_year = {}
 		# author of the month
 		self.author_of_month = {} # month -> author -> commits
 		self.author_of_year = {} # year -> author -> commits
@@ -368,11 +371,12 @@ class GitDataCollector(DataCollector):
 			self.activity_by_day_of_week[day] = self.activity_by_day_of_week.get(day, 0) + 1
 
 			# domain stats
+			dyy = date.year
 			if domain not in self.domains:
 				self.domains[domain] = {}
 			# commits
 			self.domains[domain]['commits'] = self.domains[domain].get('commits', 0) + 1
-
+			self.domains[domain][dyy] = self.domains[domain].get(dyy, 0) + 1
 			# hour of week
 			if day not in self.activity_by_hour_of_week:
 				self.activity_by_hour_of_week[day] = {}
@@ -439,6 +443,9 @@ class GitDataCollector(DataCollector):
 			# timezone
 			self.commits_by_timezone[timezone] = self.commits_by_timezone.get(timezone, 0) + 1
 
+		with open("/home/ecao/utils/gitstats/result/domain_years_commits.json", 'w') as f:
+			f.write("*"*50)
+			f.write(str(self.domains))
 		# # outputs "<stamp> <files>" for each revision
 		# revlines = getpipeoutput(['git rev-list --pretty=format:"%%at %%T" %s' % getlogrange('HEAD'), 'grep -v ^commit']).strip().split('\n')
 		# lines = []
@@ -578,6 +585,9 @@ class GitDataCollector(DataCollector):
 							self.lines_removed_by_domain_year[domain] = {}
 						self.lines_removed_by_domain_year[domain][yy] = self.lines_removed_by_domain_year[domain].get(yy, 0) + deleted
 						
+						if self.arthor_domain[author] not in self.commits_by_domain_year:
+							self.commits_by_domain_year[self.arthor_domain[author]] = {}
+						self.commits_by_domain_year[self.arthor_domain[author]][yy] = self.commits_by_domain_year[self.arthor_domain[author]].get(yy, 0) + 1
 						files, inserted, deleted = 0, 0, 0
 					except ValueError:
 						print 'Warning: unexpected line "%s"' % line
@@ -606,6 +616,8 @@ class GitDataCollector(DataCollector):
 			f.write("*"*50)
 			f.write("lines_removed_by_domain_year\n")
 			f.write(str(self.lines_removed_by_domain_year))
+			f.write("commits_by_domain_year\n")
+			f.write(str(self.commits_by_domain_year))
 		
 		# exit(0)
 		# print("*"*50)
@@ -665,6 +677,10 @@ class GitDataCollector(DataCollector):
 							self.lines_removed_by_domain_year2[self.arthor_domain[author]] = {}
 						self.lines_removed_by_domain_year2[self.arthor_domain[author]][yy] = self.lines_removed_by_domain_year2[self.arthor_domain[author]].get(yy, 0) + deleted
 						
+						if self.arthor_domain[author] not in self.commits_by_domain_year2:
+							self.commits_by_domain_year2[self.arthor_domain[author]] = {}
+						self.commits_by_domain_year2[self.arthor_domain[author]][yy] = self.commits_by_domain_year2[self.arthor_domain[author]].get(yy, 0) + 1
+
 						files, inserted, deleted = 0, 0, 0
 					except ValueError:
 						print 'Warning: unexpected line "%s"' % line
@@ -685,6 +701,8 @@ class GitDataCollector(DataCollector):
 			f.write("*"*50)
 			f.write("lines_removed_by_domain_year2\n")
 			f.write(str(self.lines_removed_by_domain_year2))
+			f.write("commits_by_domain_year2\n")
+			f.write(str(self.commits_by_domain_year2))
 
 	def refine(self):
 		# authors
@@ -1499,7 +1517,7 @@ class GitStats:
 
 		if not getgnuplotversion():
 			print 'gnuplot not found'
-			sys.exit(1)
+			# sys.exit(1)
 
 		print 'Output path: %s' % outputpath
 		cachefile = os.path.join(outputpath, 'gitstats.cache')
