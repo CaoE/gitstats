@@ -1,6 +1,6 @@
 USAGE:
-expotr PATH=/home/ecao/utils/gnuplot_path/bin:$PATH
+export PATH=/home/ecao/utils/gnuplot_path/bin:$PATH
 python2 gitstats.py /home/ecao/ecao_pytorch result3
 
 line changes results: domain_years2.json
-commits results: domain_years2_commits.json
+commits results: domain_years2_commits.json & domain_years_commits.json (prefer)
