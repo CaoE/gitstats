@@ -159,9 +159,11 @@ class DataCollector:
 		self.arthor_domain = {}
 		self.lines_added_by_domain_year = {}
 		self.lines_removed_by_domain_year = {}
+		self.arthor_domain_by_year = {}
 
 		self.lines_added_by_domain_year2 = {}
 		self.lines_removed_by_domain_year2 = {}
+		self.arthor_domain_by_year2 = {}
 
 		self.commits_by_domain_year2 = {}
 		self.commits_by_domain_year = {}
@@ -443,6 +445,14 @@ class GitDataCollector(DataCollector):
 			# timezone
 			self.commits_by_timezone[timezone] = self.commits_by_timezone.get(timezone, 0) + 1
 
+			if self.arthor_domain[author] not in self.arthor_domain_by_year:
+				self.arthor_domain_by_year[self.arthor_domain[author]] = {}
+			if yy not in self.arthor_domain_by_year[self.arthor_domain[author]]:
+				self.arthor_domain_by_year[self.arthor_domain[author]][yy] = []
+			if author not in self.arthor_domain_by_year[self.arthor_domain[author]][yy]:
+				self.arthor_domain_by_year[self.arthor_domain[author]][yy].append(author)
+
+
 		with open("/home/ecao/utils/gitstats/result/domain_years_commits.json", 'w') as f:
 			f.write("*"*50)
 			f.write(str(self.domains))
@@ -588,6 +598,13 @@ class GitDataCollector(DataCollector):
 						if self.arthor_domain[author] not in self.commits_by_domain_year:
 							self.commits_by_domain_year[self.arthor_domain[author]] = {}
 						self.commits_by_domain_year[self.arthor_domain[author]][yy] = self.commits_by_domain_year[self.arthor_domain[author]].get(yy, 0) + 1
+				
+						# if self.arthor_domain[author] not in self.arthor_domain_by_year:
+						# 	self.arthor_domain_by_year[self.arthor_domain[author]] = {}
+						# if yy not in self.arthor_domain_by_year[self.arthor_domain[author]]:
+						# 	self.arthor_domain_by_year[self.arthor_domain[author]][yy] = []
+						# if author not in self.arthor_domain_by_year[self.arthor_domain[author]][yy]:
+						# 	self.arthor_domain_by_year[self.arthor_domain[author]][yy].append(author)
 						files, inserted, deleted = 0, 0, 0
 					except ValueError:
 						print 'Warning: unexpected line "%s"' % line
@@ -608,7 +625,15 @@ class GitDataCollector(DataCollector):
 					(files, inserted, deleted) = (0, 0, 0)
 				#self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
 		self.total_lines += total_lines
-		
+
+		for domain in self.arthor_domain_by_year:
+			value = self.arthor_domain_by_year[domain]
+			for yy in list(value.keys()):
+				length = len(value[yy])
+				key = str(yy) + "_num"
+				value[key] = length
+
+
 		with open("/home/ecao/utils/gitstats/result/domain_years.json", 'w') as f:
 			f.write("*"*50)
 			f.write("lines_added_by_domain_year\n")
@@ -618,7 +643,9 @@ class GitDataCollector(DataCollector):
 			f.write(str(self.lines_removed_by_domain_year))
 			f.write("commits_by_domain_year\n")
 			f.write(str(self.commits_by_domain_year))
-		
+			f.write("arthor_domain_by_year\n")
+			f.write(str(self.arthor_domain_by_year))
+
 		# exit(0)
 		# print("*"*50)
 		# print("lines_removed_by_domain_year")
@@ -681,6 +708,12 @@ class GitDataCollector(DataCollector):
 							self.commits_by_domain_year2[self.arthor_domain[author]] = {}
 						self.commits_by_domain_year2[self.arthor_domain[author]][yy] = self.commits_by_domain_year2[self.arthor_domain[author]].get(yy, 0) + 1
 
+						# if self.arthor_domain[author] not in self.arthor_domain_by_year2:
+						# 	self.arthor_domain_by_year2[self.arthor_domain[author]] = {}
+						# if yy not in self.arthor_domain_by_year2[self.arthor_domain[author]]:
+						# 	self.arthor_domain_by_year2[self.arthor_domain[author]][yy] = []
+						# if author not in self.arthor_domain_by_year2[self.arthor_domain[author]][yy]:
+						# 	self.arthor_domain_by_year2[self.arthor_domain[author]][yy].append(author)
 						files, inserted, deleted = 0, 0, 0
 					except ValueError:
 						print 'Warning: unexpected line "%s"' % line
@@ -694,6 +727,15 @@ class GitDataCollector(DataCollector):
 				else:
 					print 'Warning: failed to handle line "%s"' % line
 					(files, inserted, deleted) = (0, 0, 0)
+
+
+		# for domain in self.arthor_domain_by_year2:
+		# 	value = self.arthor_domain_by_year2[domain]
+		# 	for yy in list(value.keys()):
+		# 		length = len(value[yy])
+		# 		key = str(yy) + "_num"
+		# 		value[key] = length
+
 		with open("/home/ecao/utils/gitstats/result/domain_years2.json", 'w') as f:
 			f.write("*"*50)
 			f.write("lines_added_by_domain_year2\n")
@@ -703,6 +745,9 @@ class GitDataCollector(DataCollector):
 			f.write(str(self.lines_removed_by_domain_year2))
 			f.write("commits_by_domain_year2\n")
 			f.write(str(self.commits_by_domain_year2))
+			# f.write("arthor_domain_by_year2\n")
+			# f.write(str(self.arthor_domain_by_year2))
+
 
 	def refine(self):
 		# authors
