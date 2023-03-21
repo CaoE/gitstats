@@ -4,3 +4,4 @@ python2 gitstats.py /home/ecao/ecao_pytorch result3
 
 line changes results: domain_years2.json
 commits results: domain_years2_commits.json & domain_years_commits.json (prefer)
+contributor/author results: domain_years.json
